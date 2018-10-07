@@ -11,30 +11,7 @@ file = open("db_names.txt", "r")
 stuff = file.read()
 name_list = stuff.split("\n")
 name_list.remove("")
-# print(name_list)  [this print call was called as a checker]
 file.close()
-
-
-# DATABASE_NAMES = []
-# print("Length of Database Names: ", len(DATABASE_NAMES))
-#
-# db_name = input("Enter the name of the database (no spaces please): ").strip()
-# print("The following database names have been taken: ")
-# for thename in DATABASE_NAMES:
-#     print(thename)
-#
-# databasename = db_name + ".db"
-# conn = sqlite3.connect(databasename)
-# cursor = conn.cursor()
-# if db_name not in DATABASE_NAMES:
-#     DATABASE_NAMES.append(db_name)
-#     print("Length of DATABASE_NAMES: ", len(DATABASE_NAMES))
-#     cursor.execute("""CREATE TABLE Information (
-#                         Name text,
-#                         Username text,
-#                         Followers Integer,
-#                         Following Integer,
-#                         Display_Pic text)""")
 
 print("============== Database initialization ==============\n")
 
