@@ -7,8 +7,6 @@ import requests
 import shutil
 
 
-# todo: ALWAYS REMEMBER: FOR THIS PROJECT, ID TO BE USED IS  @sidhusultann AND PASSWORD Sujinder64
-
 DATABASE_NAMES = []
 print("Length of Database Names: ", len(DATABASE_NAMES))
 
@@ -128,9 +126,6 @@ class InstaParse:
         except Exception as error:
             print(error)
             print('Could not download image from the internet!')
-
-        # TODO: ANOTHER PROBLEM - CANNOT RECONNECT TO OLDER DATABASE
-        # TODO: ANOTHER PROBLEM - NO DATABASE NAMES BEING ADDED TO THE DB NAMES LIST
 
 
 if __name__ == "__main__":
