@@ -7,26 +7,97 @@ import requests
 import shutil
 
 
-DATABASE_NAMES = []
-print("Length of Database Names: ", len(DATABASE_NAMES))
+file = open("db_names.txt", "r")
+stuff = file.read()
+name_list = stuff.split("\n")
+name_list.remove("")
+# print(name_list)  [this print call was called as a checker]
+file.close()
 
-db_name = input("Enter the name of the database (no spaces please): ").strip()
-print("The following database names have been taken: ")
-for thename in DATABASE_NAMES:
-    print(thename)
 
-databasename = db_name + ".db"
-conn = sqlite3.connect(databasename)
-cursor = conn.cursor()
-if db_name not in DATABASE_NAMES:
-    DATABASE_NAMES.append(db_name)
-    print("Length of DATABASE_NAMES: ", len(DATABASE_NAMES))
+# DATABASE_NAMES = []
+# print("Length of Database Names: ", len(DATABASE_NAMES))
+#
+# db_name = input("Enter the name of the database (no spaces please): ").strip()
+# print("The following database names have been taken: ")
+# for thename in DATABASE_NAMES:
+#     print(thename)
+#
+# databasename = db_name + ".db"
+# conn = sqlite3.connect(databasename)
+# cursor = conn.cursor()
+# if db_name not in DATABASE_NAMES:
+#     DATABASE_NAMES.append(db_name)
+#     print("Length of DATABASE_NAMES: ", len(DATABASE_NAMES))
+#     cursor.execute("""CREATE TABLE Information (
+#                         Name text,
+#                         Username text,
+#                         Followers Integer,
+#                         Following Integer,
+#                         Display_Pic text)""")
+
+print("============== Database initialization ==============\n")
+
+
+
+
+def display_all_db_names(db_names_list):
+    """Displays all the taken db names."""
+    for names in db_names_list:
+        print(names, end="\n")
+
+
+def write_to_file(string, file_name):
+    """Writes string to file"""
+    thefile = open(file_name, "r")
+    stuff_in_file = thefile.read().split("\n")
+    thefile.close()
+    openedfile = open(file_name, "w")
+    for things in stuff_in_file:
+        openedfile.write(things)
+        openedfile.write("\n")
+    openedfile.write(string)
+    openedfile.close()
+
+
+def create_db(name):
+    """Creates the database, if there doesn't exist one already. Returns a cursor object."""
+    database_name = name + ".db"
+    db_conn = sqlite3.connect(database_name)
+    cursor = db_conn.cursor()
     cursor.execute("""CREATE TABLE Information (
                         Name text,
                         Username text,
                         Followers Integer,
                         Following Integer,
                         Display_Pic text)""")
+    return cursor
+
+
+def connect_to_db(name):
+    """Connects to an already existing database. Returns a cursor object."""
+    db_name = name + ".db"
+    db_conn = sqlite3.connect(db_name)
+    cursor = db_conn.cursor()
+    return cursor
+
+
+print("Previously taken names are...\n")
+if len(name_list) < 1:
+    print("No databases currently exist.\n")
+
+else:
+    display_all_db_names(name_list)
+print("Which database do you wish to connect with? ")
+given_database_name = input("It may be new or pre-existing. >>").lower().strip()
+if given_database_name not in name_list:
+    write_to_file(given_database_name, "db_names.txt")
+    db_cursor = create_db(given_database_name)
+else:
+    db_cursor = connect_to_db(given_database_name)
+
+
+# TODO: =============================================
 
 
 def add_to_db(parsed_object: 'InstaParse', cursor_object):
@@ -64,12 +135,15 @@ class InstaParse:
     def signin(self):
         """A function that takes the login credentials of the user and logs into the
         instagram account of the user."""
-        usernamefield = self.driver.find_element_by_xpath('//input[@aria-label="Phone number, username, or email"]')
-        usernamefield.send_keys(self.username)
-        pwordfield = self.driver.find_element_by_xpath('//input[@aria-label="Password"]')
-        pwordfield.send_keys(self.password)
-        sleep(2)
-        pwordfield.submit()
+        try:
+            usernamefield = self.driver.find_element_by_xpath('//input[@aria-label="Phone number, username, or email"]')
+            usernamefield.send_keys(self.username)
+            pwordfield = self.driver.find_element_by_xpath('//input[@aria-label="Password"]')
+            pwordfield.send_keys(self.password)
+            sleep(2)
+            pwordfield.submit()
+        except:
+            print("Error signing in!")
 
     def own_profile(self):
         """Navigates to the profile of the user himself."""
@@ -104,13 +178,16 @@ class InstaParse:
     def return_info(self):
         """Add information from the current profile to the database."""
 
-        soup = BeautifulSoup(self.driver.page_source, 'lxml')
-        followers = soup.find('li', class_="Y8-fY").nextSibling.a.span.string
-        following = soup.find('li', class_="Y8-fY").nextSibling.nextSibling.a.span.string
-        name = soup.find('h1', class_="rhpdm").string
-        user_name = self.currentprofile
-        recent_pic_path = self.get_dp_path()
-        return [followers, following, name, user_name, recent_pic_path]
+        try:
+            soup = BeautifulSoup(self.driver.page_source, 'lxml')
+            followers = soup.find('li', class_="Y8-fY").nextSibling.a.span.string
+            following = soup.find('li', class_="Y8-fY").nextSibling.nextSibling.a.span.string
+            name = soup.find('h1', class_="rhpdm").string
+            user_name = self.currentprofile
+            recent_pic_path = self.get_dp_path()
+            return [followers, following, name, user_name, recent_pic_path]
+        except:
+            print("Seems like there was an error!")
 
     def get_dp_path(self):
         """Downloads the display pic of the specified profile and then downloads their display pic. Returns path."""
@@ -139,8 +216,8 @@ if __name__ == "__main__":
             break
         newparse.go_to_target()
         newparse.get_dp_path()
-        add_to_db(newparse, cursor)
+        add_to_db(newparse, db_cursor)
 
     answer2 = input("Would you like to see all entries to the database? Answer in yes or no please. ").lower().strip()
     if answer2 == "yes":
-        show_all_data(cursor)
+        show_all_data(db_cursor)
